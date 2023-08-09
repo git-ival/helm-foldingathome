@@ -11,7 +11,7 @@ data:
   config.xml:
     <config>
       {{ range $key, $value := .Values.foldingathome.config }}
-      <{{ $key }} value='{{ $value }}'/>
+      <{{ $key }} v='{{ $value }}'/>
       {{ end }}
       {{ range $key, $value := .Values.foldingathome.slots }}
       <slot id='{{ $key }}' type='{{ $value }}'/>

@@ -4,24 +4,34 @@
 # If you have your own user or team, override the values below. You can also
 # enable/disable gpus, smp, etc.
 foldingathome:
-  image: lukasheinrich/folding
+  image: linuxserver/foldingathome
   config:
     gpu: false
-    passkey: ''
+    gui-enabled: false
+    disable-viz: true
+    verbosity: 1
+    # passkey: ""
     power: "full"
-    smp: "true"
-    team: "38188"
-    user: "CERN_Cloud"
+    smp: true
+    team: 1064771
+    user: "Rancher-ToU"
+    command-allow-no-pass: ""
+    web-allow: "0/0:7396"
+    allow: "0/0:7396"
+  env:
+    PUID: "0"
+    PGID: "0"
+    TZ: "Etc/UTC"
   nodeSelector: {}
   priorityClassName: vlow-priority
   replicas: 1
   resources:
     requests:
-      cpu: 1
-      memory: "1048Mi"
+      cpu: "250m"
+      memory: "128Mi"
     limits:
-      cpu: 1
-      memory: "2048Mi"
+      cpu: "500m"
+      memory: "512Mi"
 
 # Horizontal pod auto scaler configuration. The goal is to backfill the
 # cluster with folding@home workloads, so we use an hpa resource with a very high
@@ -32,8 +42,9 @@ foldingathome:
 hpa:
   enabled: true
   minReplicas: 1
-  maxReplicas: 10000000
-  targetCPU: 90
+  maxReplicas: 8
+  targetCPU: 60
+  targetMemory: 60
 
 # A set of predefined priorities for your cluster.
 # If you can drop if you already manage priorities yourself, otherwise this
@@ -45,4 +56,3 @@ priority:
     default: true
   - name: vlow-priority
     value: -100000
-

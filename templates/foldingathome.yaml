@@ -1,5 +1,5 @@
 {{- range .Values.priority }}
-apiVersion: scheduling.k8s.io/v1beta1
+apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
   name: {{ .name }}
@@ -24,6 +24,7 @@ spec:
         app: {{ .Release.Name }}
     spec:
       securityContext:
+        runAsNonRoot: false
         runAsUser: 0
         runAsGroup: 0
         fsGroup: 0
@@ -33,9 +34,16 @@ spec:
       containers:
       - name: foldingathome
         image: {{ .Values.foldingathome.image }}
+{{- if .Values.foldingathome.env }}
+        env:
+        {{- range $name, $value := .Values.foldingathome.env }}
+        - name: {{ $name }}
+          value: {{ $value | quote }}
+        {{- end }}
+{{- end }}
         # FAHClient renames the given config to update with the slots, we need
         # to have an actual file not the configmap being passed to it.
-        command: ["/bin/bash", "-c", "mkdir -p /etc/fahclient; cp /config.xml /etc/fahclient/config.xml && FAHClient --web-allow=0/0:7396 --allow=0/0:7396 --config /etc/fahclient/config.xml"]
+          command: ["/bin/bash", "-c", "echo 'RUNNING FAHCLIENT'; mkdir -p /etc/fahclient; cp /config.xml /etc/fahclient/config.xml && /app/usr/bin/FAHClient --config /etc/fahclient/config.xml"]
         volumeMounts:
         - name: foldingathome
           mountPath: /config.xml
@@ -51,7 +59,7 @@ spec:
 ---
 {{- if .Values.hpa.enabled }}
 kind: HorizontalPodAutoscaler
-apiVersion: autoscaling/v2beta2
+apiVersion: autoscaling/v2
 metadata:
   name: hpa-{{ .Release.Name }}
 spec:
@@ -59,6 +67,15 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: {{ .Release.Name }}
+  behavior:
+    scaleUp:
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      - type: Percent
+        value: 10
+        periodSeconds: 60
   minReplicas: {{ .Values.hpa.minReplicas }}
   maxReplicas: {{ .Values.hpa.maxReplicas }}
   metrics:
@@ -68,4 +85,12 @@ spec:
       target:
         type: Utilization
         averageUtilization: {{ .Values.hpa.targetCPU }}
+{{- if .Values.hpa.targetMemory }}
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.hpa.targetMemory }}
+{{- end }}
 {{- end }}
