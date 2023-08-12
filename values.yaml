@@ -22,7 +22,8 @@ foldingathome:
     PUID: "0"
     PGID: "0"
     TZ: "Etc/UTC"
-  nodeSelector: {}
+  nodeSelector:
+    folding: "yes"
   priorityClassName: vlow-priority
   replicas: 1
   resources:

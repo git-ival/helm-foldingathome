@@ -52,6 +52,8 @@ spec:
 {{ toYaml .Values.foldingathome.resources | indent 10 }}
       nodeSelector:
 {{ toYaml .Values.foldingathome.nodeSelector | indent 8 }}
+      tolerations:
+{{ toYaml .Values.foldingathome.tolerations | indent 8 }}
       volumes:
       - name: foldingathome
         configMap:
